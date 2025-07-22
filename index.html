@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Cookie Parser Tool</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        padding: 1rem;
+        background: #f0f0f0;
+      }
+      textarea {
+        width: 100%;
+        height: 200px;
+        margin-top: 10px;
+        padding: 10px;
+        font-family: monospace;
+      }
+      button {
+        margin-top: 10px;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+      .btns {
+        display: flex;
+        gap: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Cookie Parser Tool</h2>
+    <div class="btns">
+      <button onclick="pasteText()">📋 Paste</button>
+      <button onclick="getJson()">📤 Get</button>
+    </div>
+    <textarea id="input" placeholder="Paste cookie string here..."></textarea>
+
+    <script>
+      async function pasteText() {
+        try {
+          const text = await navigator.clipboard.readText();
+          document.getElementById("input").value = text;
+        } catch (err) {
+          alert("Không thể dán từ clipboard: " + err);
+        }
+      }
+
+      function getJson() {
+        const input = document.getElementById("input").value;
+        const items = input.split("},{");
+        const result = [];
+
+        for (let item of items) {
+          item = item.replace(/^{|}$/g, "").trim();
+          const pairs = item.split(", ");
+          const obj = {};
+          for (let pair of pairs) {
+            const [k, vRaw] = pair.split("=");
+            let v = vRaw;
+            if (!v) continue;
+            if (v.toLowerCase() === "true") v = true;
+            else if (v.toLowerCase() === "false") v = false;
+            else if (v.toLowerCase() === "null") v = null;
+            else if (!isNaN(v)) {
+              v = Number(v);
+            }
+            obj[k] = v;
+          }
+          result.push(obj);
+        }
+
+        const json = JSON.stringify(result, null, 2);
+        navigator.clipboard
+          .writeText(json)
+          .then(() => alert("Đã copy JSON vào clipboard!"))
+          .catch((err) => alert("Lỗi khi copy: " + err));
+      }
+    </script>
+  </body>
+</html>
