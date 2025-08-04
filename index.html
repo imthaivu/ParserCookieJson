@@ -36,16 +36,30 @@
           item = item.replace(/^{|}$/g, "").trim();
           const pairs = item.split(", ");
           const obj = {};
+
           for (let pair of pairs) {
             const [k, vRaw] = pair.split("=");
+            if (!vRaw) continue;
+
             let v = vRaw;
-            if (!v) continue;
-            if (v.toLowerCase() === "true") v = true;
-            else if (v.toLowerCase() === "false") v = false;
-            else if (v.toLowerCase() === "null") v = null;
-            else if (!isNaN(v)) v = Number(v);
-            obj[k] = v;
+            const lower = v.toLowerCase();
+
+            // ép kiểu đúng mục tiêu
+            if (k === "value") {
+              obj[k] = v; // luôn là string
+            } else if (lower === "true") {
+              obj[k] = true;
+            } else if (lower === "false") {
+              obj[k] = false;
+            } else if (lower === "null") {
+              obj[k] = null;
+            } else if (["expirationDate", "storeId"].includes(k) && !isNaN(v)) {
+              obj[k] = Number(v); // các field số
+            } else {
+              obj[k] = v;
+            }
           }
+
           result.push(obj);
         }
 
